@@ -2,7 +2,7 @@
   "version": 2,
   "configurePresets": [
     {
-      "name": "vcpkg",
+      "name": "windows",
       "generator" : "Visual Studio 17 2022",
       "binaryDir": "${sourceDir}/build",
       "cacheVariables": {
@@ -11,7 +11,7 @@
       }
     },
     {
-      "name": "default",
+      "name": "linux",
       "generator" : "Ninja",
       "binaryDir": "${sourceDir}/build",
       "cacheVariables": {

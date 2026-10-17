@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 4.0)
 
-project(TestProject LANGUAGES CXX)
+project(game LANGUAGES CXX)
 
 # Use the latest C++ standard
 set(CMAKE_CXX_STANDARD 20)
@@ -18,11 +18,11 @@ find_package(SDL2_ttf REQUIRED)
 find_package(SDL2_ttf CONFIG REQUIRED)
 find_package(SDL2_mixer REQUIRED)
 find_package(SDL2_image REQUIRED)
-find_package(mazer REQUIRED)
+find_package(mazer REQUIRED) # This is a library called mazer, not the game itself
 
-add_executable(game2 main.cpp GameCommands.cpp InputManager.cpp LevelManager.cpp)
+add_executable(game main.cpp GameCommands.cpp InputManager.cpp LevelManager.cpp)
 
-target_link_libraries(game2 
+target_link_libraries(game 
 PUBLIC 
 SDL2::SDL2main
 SDL2_ttf::SDL2_ttf
@@ -38,16 +38,16 @@ ws2_32
 testlib::testlib 
 )
 
-# Copy test files in the output folder of the game2 target
+# Copy test files in the output folder of the game target
 add_custom_command(
-  TARGET game2 POST_BUILD
+  TARGET game POST_BUILD
   COMMAND ${CMAKE_COMMAND} -E copy_directory
           "${CMAKE_CURRENT_SOURCE_DIR}/testdata/"
-          "$<TARGET_FILE_DIR:game2>"
+          "$<TARGET_FILE_DIR:game>"
 )
 add_custom_command(
-  TARGET game2 POST_BUILD
+  TARGET game POST_BUILD
   COMMAND ${CMAKE_COMMAND} -E copy_directory
           "${CMAKE_CURRENT_SOURCE_DIR}/gamedata/"
-          "$<TARGET_FILE_DIR:game2>"
+          "$<TARGET_FILE_DIR:game>"
 )
