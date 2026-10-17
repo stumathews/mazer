@@ -18,11 +18,11 @@
 		<setting name="numPickups" type="int">20</setting>
 		<setting name="isNetworkGame" type="bool">true</setting>
 		<setting name="createAutoLevel" type="bool">false</setting>
-		<setting name="level1FileName" type="string">data\\Level5.xml</setting>
-		<setting name="level2FileName" type="string">data\\Level2.xml</setting>
-    <setting name="level3FileName" type="string">data\\Level3.xml</setting>
-    <setting name="level4FileName" type="string">data\\Level4.xml</setting>
-    <setting name="level5FileName" type="string">data\\Level5.xml</setting>
+		<setting name="level1FileName" type="string">conf\\Level5.xml</setting>
+		<setting name="level2FileName" type="string">conf\\Level2.xml</setting>
+    <setting name="level3FileName" type="string">conf\\Level3.xml</setting>
+    <setting name="level4FileName" type="string">conf\\Level4.xml</setting>
+    <setting name="level5FileName" type="string">conf\\Level5.xml</setting>
     <setting name="disableCharacters" type="bool">false</setting>
   </global>
 

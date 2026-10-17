@@ -48,9 +48,7 @@ namespace
 
 	static void InitializeGameSubSystems(GameStructure& gameStructure);
 	static void PrepareFirstLevel();
-	static shared_ptr<FixedStepGameLoop> CreateGameLoopStrategy();
 	static void GetInput(unsigned long deltaMs);
-	static void SetupEventTap();
 
 	void PrepareFirstLevel()
 	{
@@ -80,15 +78,16 @@ namespace
 			: "Creating Single player level...");
 	}
 
+	// Warms up the game subsystems, including logging, level manager, and network manager. This is called once at the start of the game.
 	void InitializeGameSubSystems(GameStructure& gameStructure)
 	{
 		constexpr auto screenWidth = 0; // 0 will mean it will get read from the settings file
 		constexpr auto screenHeight = 0; // 0 will mean it will get read from the settings file
 		constexpr auto windowTitle = "Mazer2D!";
-		constexpr auto resourcesFilePath = "data\\Resources.xml";
-		constexpr auto sceneFolderPath = "data\\";
+		constexpr auto resourcesFilePath = "conf\\Resources.xml"; // relative to output binary folder
+		constexpr auto sceneFolderPath = "conf\\";
 
-		// Initialize network subsystem
+		// Check game settings to determine if this is a network game
 		const auto isNetworkGame = SettingsManager::Get()->GetBool("global", "isNetworkGame");
 		mazer::GameDataManager::Get()->Initialize(isNetworkGame);
 
@@ -117,56 +116,33 @@ namespace
 		}
 	}
 
+	// Runs each frame to update the game state. This is called automatically by the game loop.
 	static void Update(const unsigned long deltaMs)
 	{
-		// Process all pending events
-		EventManager::Get()->ProcessAllEvents(deltaMs);
-
-		// Send update event - will dispatch events to subscribers who have subscribed to game object 'update' event 
+		// Execute 'draw' event's subscribers immediately
 		EventManager::Get()->DispatchEventToSubscriber(EventFactory::Get()->CreateUpdateAllGameObjectsEvent(), deltaMs);
 
-		// Send update processes event - will dispatch event to processes
+		//Execute 'update processes' event's subscribers immediately.
 		EventManager::Get()->DispatchEventToSubscriber(EventFactory::Get()->CreateUpdateProcessesEvent(), deltaMs);
+
+		// For each event in the event queue, call all event's subscribers iteratively.
+		EventManager::Get()->ProcessAllEvents(deltaMs);  // Must not take longer than the time step, or the game will lag. If it does, consider increasing the time step.
 	}
 
+	// Runs during each frame to draw the current scene. This is called automatically by the game loop.
 	static void Draw()
 	{
-		// Time-sensitive, skip queue. Draws the current scene
+		// Time-sensitive, skip queue. Execute draw event's subscribers immediately. This is because we want to draw the current scene as quickly as possible, and not wait for the event queue to be processed.
 		EventManager::Get()->DispatchEventToSubscriber(EventFactory::Get()->CreateGenericEvent(DrawCurrentSceneEventId, "Game"), 0UL);
 	}
 
 	void GetInput(const unsigned long deltaMs)
 	{
+		// Sample input events from the SDL event queue and translate them into game commands. This is called automatically by the game loop.
 		LevelManager::Get()->GetInputManager()->Sample(deltaMs);
+
+		// If this is a network game, listen for network messages from the server or clients. Will create networking events. This is called automatically by the game loop.
 		NetworkManager::Get()->Listen(mazer::GameDataManager::Get()->GameWorldData.ElapsedGameTime);
-	}
-
-	shared_ptr<FixedStepGameLoop> CreateGameLoopStrategy()
-	{
-		// Create a fixed step game loop with a update timestep of 16ms (approx 60fps). Use our update/draw functions
-		return std::make_shared<FixedStepGameLoop>(16, Update, Draw, GetInput);
-	}
-
-	void SetupEventTap()
-	{
-		// Register a Window to show causal relationships and events
-		//auto toolWindow = libcausality::ToolWindow("ToolWindow1", 340,340, "This is a Tool Window Title");
-
-		// Tap into the fetchPickupEvent to track relationships between player and pickups
-		EventManager::Get()->SetEventTap([](const shared_ptr<Event>& event, const IEventSubscriber* subscriber)
-			{
-				// Ignore tapping some events:
-				if (event->Id == PlayerMovedEventTypeEventId) return;
-				if (event->Id == AddGameObjectToCurrentSceneEventId) return;
-				if (event->Id == mazer::EnemyMovedEventId) return;
-				if (event->Id == DrawCurrentSceneEventId) return;
-				if (event->Id == UpdateAllGameObjectsEventTypeEventId) return;
-				if (event->Id == UpdateProcessesEventId) return;
-				if (event->Id == ControllerMoveEventId) return;
-
-				// Generate causality data
-				// libcausality::EventTap::Get()->Tap(event, const_cast<IEventSubscriber*>(subscriber)->GetSubscriberName(), GameDataManager::Get()->GameWorldData.ElapsedGameTime);
-			});
 	}
 }
 
@@ -175,7 +151,7 @@ int main(int, char* [])
 	try
 	{
 		// Load settings file
-		if (!SettingsManager::Get()->ReadSettingsFile("data/settings.xml"))
+		if (!SettingsManager::Get()->ReadSettingsFile("conf\\settings.xml"))
 		{
 			char cwd[1024];
 			if (_getcwd(cwd, sizeof(cwd)) != nullptr)
@@ -190,19 +166,16 @@ int main(int, char* [])
 			}
 		}
 
-		// Initialize the game structure
-		GameStructure infrastructure(CreateGameLoopStrategy());
+		// Initialize the game infrastructure: loop strategy , update, draw, and input functions
+		GameStructure infrastructure(std::make_shared<FixedStepGameLoop>(16, Update, Draw, GetInput));
 
-		// Initialize all game subsystems
+		// Initialize game subsystems: logging, level manager, network manager, etc.
 		InitializeGameSubSystems(infrastructure);
-
-		// Allow tapping into all events diagnostic purposes
-		SetupEventTap();
 
 		// Load level and create/add game objects
 		PrepareFirstLevel();
 
-		// Start the game loop.
+		// Start the game loop. This will call the Update and Draw functions every frame, as well as the GetInput function to sample input events.
 		// This will pump update/draw events onto the event system, which level objects subscribe to
 		infrastructure.DoGameLoop(&mazer::GameDataManager::Get()->GameWorldData);
 

@@ -2,21 +2,21 @@
 
 <!-- List of all asset in the game -->
 <Assets>
-  <Asset uid="1" scene="4" name="LevelMusic4" type="music" filename="data/assets/MainTheme.wav"></Asset>
-  <Asset uid="2" scene="0" name="scratch.wav" type="fx" filename="data/assets/scratch.wav"></Asset>
-  <Asset uid="3" scene="0" name="high.wav" type="fx" filename="data/assets/high.wav"></Asset>
-  <Asset uid="4" scene="0" name="medium.wav" type="fx" filename="data/assets/medium.wav"></Asset>
-  <Asset uid="5" scene="0" name="low.wav" type="fx" filename="data/assets/low.wav"></Asset>  
-  <Asset uid="6" scene="1" name="p1.png" type="graphic" filename="data/assets/p1_front.png" width="66" height="92">
+  <Asset uid="1" scene="4" name="LevelMusic4" type="music" filename="assets/MainTheme.wav"></Asset>
+  <Asset uid="2" scene="0" name="scratch.wav" type="fx" filename="assets/scratch.wav"></Asset>
+  <Asset uid="3" scene="0" name="high.wav" type="fx" filename="assets/high.wav"></Asset>
+  <Asset uid="4" scene="0" name="medium.wav" type="fx" filename="assets/medium.wav"></Asset>
+  <Asset uid="5" scene="0" name="low.wav" type="fx" filename="assets/low.wav"></Asset>  
+  <Asset uid="6" scene="1" name="p1.png" type="graphic" filename="assets/p1_front.png" width="66" height="92">
 		
 	</Asset>
-  <Asset uid="7" scene="2" name="p2.png" type="graphic" filename="data/assets/p2_front.png" width="66" height="92">
+  <Asset uid="7" scene="2" name="p2.png" type="graphic" filename="assets/p2_front.png" width="66" height="92">
 		
 	</Asset>
-  <Asset uid="8" scene="2" name="p3.png" type="graphic" filename="data/assets/p3_front.png" width="66" height="92">
+  <Asset uid="8" scene="2" name="p3.png" type="graphic" filename="assets/p3_front.png" width="66" height="92">
 		
 	</Asset>
-  <Asset uid="9" scene="3" name="p1.png" type="graphic" filename="data/assets/p1_walk.png" width="256" height="512">
+  <Asset uid="9" scene="3" name="p1.png" type="graphic" filename="assets/p1_walk.png" width="256" height="512">
     <sprite>
       <animation>
         <keyframes>
@@ -35,7 +35,7 @@
       </animation> 
     </sprite>  
   </Asset>
-  <Asset uid="10" scene="3" name="p2.png" type="graphic" filename="data/assets/p2_walk.png" width="256" height="512">
+  <Asset uid="10" scene="3" name="p2.png" type="graphic" filename="assets/p2_walk.png" width="256" height="512">
      <sprite>
       <animation>
         <keyframes>
@@ -54,7 +54,7 @@
       </animation> 
     </sprite>  
   </Asset>
-  <Asset uid="11" scene="3" name="p3.png" type="graphic" filename="data/assets/p3_walk.png" width="256" height="512">
+  <Asset uid="11" scene="3" name="p3.png" type="graphic" filename="assets/p3_walk.png" width="256" height="512">
      <sprite>
       <animation>
         <keyframes>
@@ -73,13 +73,13 @@
       </animation> 
     </sprite>  
   </Asset>
-  <Asset uid="12" scene="0" name="arial.ttf" type="font" filename="data/assets/arial.ttf"></Asset>
-  <Asset uid="13" scene="0" name="beep.wav" type="fx" filename="data/assets/beep.wav"></Asset>
-  <Asset uid="14" scene="0" name="boop.wav" type="fx" filename="data/assets/boop.wav"></Asset>
-  <Asset uid="15" scene="1" name="LevelMusic1" type="music" filename="data/assets/8BitMetal.wav"></Asset>
-  <Asset uid="16" scene="2" name="LevelMusic2" type="music" filename="data/assets/FranticLevel.wav"></Asset>
-  <Asset uid="17" scene="3" name="LevelMusic3" type="music" filename="data/assets/HappyLevel.wav"></Asset>
-  <Asset uid="18" scene="0" name="snap_player" type="graphic" filename="data/assets/character2.png" width="32" height="32">
+  <Asset uid="12" scene="0" name="arial.ttf" type="font" filename="assets/arial.ttf"></Asset>
+  <Asset uid="13" scene="0" name="beep.wav" type="fx" filename="assets/beep.wav"></Asset>
+  <Asset uid="14" scene="0" name="boop.wav" type="fx" filename="assets/boop.wav"></Asset>
+  <Asset uid="15" scene="1" name="LevelMusic1" type="music" filename="assets/8BitMetal.wav"></Asset>
+  <Asset uid="16" scene="2" name="LevelMusic2" type="music" filename="assets/FranticLevel.wav"></Asset>
+  <Asset uid="17" scene="3" name="LevelMusic3" type="music" filename="assets/HappyLevel.wav"></Asset>
+  <Asset uid="18" scene="0" name="snap_player" type="graphic" filename="assets/character2.png" width="32" height="32">
      <colorkey red="255" blue="255" green="255"/>
      <sprite>
       <animation>
@@ -96,7 +96,7 @@
       </animation> 
     </sprite>  
   </Asset>
-	<Asset uid="188" scene="0" name="edge_player" type="graphic" filename="data/assets/character1.png" width="32" height="32">
+	<Asset uid="188" scene="0" name="edge_player" type="graphic" filename="assets/character1.png" width="32" height="32">
      <colorkey red="255" blue="255" green="255"/>
      <sprite>
       <animation>
@@ -113,7 +113,7 @@
       </animation> 
     </sprite>  
   </Asset>
-	<Asset uid="19" scene="0" name="goldcoin" type="graphic" filename="data/assets/coin_gold.png" width="32" height="32">
+	<Asset uid="19" scene="0" name="goldcoin" type="graphic" filename="assets/coin_gold.png" width="32" height="32">
      <colorkey red="255" blue="255" green="255"/>
      <sprite>
       <animation>
@@ -130,7 +130,7 @@
       </animation> 
     </sprite>  
   </Asset>
-	<Asset uid="20" scene="0" name="silvercoin" type="graphic" filename="data/assets/coin_silver.png" width="32" height="32">
+	<Asset uid="20" scene="0" name="silvercoin" type="graphic" filename="assets/coin_silver.png" width="32" height="32">
      <colorkey red="255" blue="255" green="255"/>
      <sprite>
       <animation>
@@ -147,7 +147,7 @@
       </animation> 
     </sprite>  
   </Asset>
-	<Asset uid="21" scene="0" name="coppercoin" type="graphic" filename="data/assets/coin_copper.png" width="32" height="32">
+	<Asset uid="21" scene="0" name="coppercoin" type="graphic" filename="assets/coin_copper.png" width="32" height="32">
     <colorkey red="255" blue="255" green="255"/>
     <sprite>
     <animation>
@@ -164,7 +164,7 @@
     </animation>
 		</sprite>
 	</Asset>
-	<Asset uid="22" scene="0" name="hudspritesheet" type="graphic" filename="data/assets/hud_spritesheet.png" width="269" height="32">
+	<Asset uid="22" scene="0" name="hudspritesheet" type="graphic" filename="assets/hud_spritesheet.png" width="269" height="32">
 		<colorkey red="255" blue="255" green="255"/>
 		<sprite>
 			<animation>
@@ -207,9 +207,9 @@
 			</animation>
 		</sprite>
 	</Asset>
-	<Asset uid="23" scene="0" name="win.wav" type="fx" filename="data/assets/win.wav"></Asset>
-	<Asset uid="24" scene="0" name="AutoLevelMusic" type="music" filename="data/assets/IntroLoop.wav"></Asset>
+	<Asset uid="23" scene="0" name="win.wav" type="fx" filename="assets/win.wav"></Asset>
+	<Asset uid="24" scene="0" name="AutoLevelMusic" type="music" filename="assets/IntroLoop.wav"></Asset>
   
-	<Asset uid="25" scene="4" name="LevelMusic5" type="music" filename="data/assets/SubduedTheme.wav"></Asset>
-	<Asset uid="26" scene="0" name="kenvector_future2.ttf" type="font" filename="data/assets/kenvector_future2.ttf"></Asset>
+	<Asset uid="25" scene="4" name="LevelMusic5" type="music" filename="assets/SubduedTheme.wav"></Asset>
+	<Asset uid="26" scene="0" name="kenvector_future2.ttf" type="font" filename="assets/kenvector_future2.ttf"></Asset>
 </Assets>

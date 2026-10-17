@@ -8,6 +8,7 @@ gamelib::ControllerMoveEvent::KeyState GetKeyState(const SDL_Event& e)
 						: gamelib::ControllerMoveEvent::KeyState::Released;
 }
 
+// Fetches input from the SDL event queue and translates it into game commands. This function is called automatically every frame by the game loop.
 void InputManager::Sample(const unsigned long deltaMs)
 {
 	if(gameCommands == nullptr)
