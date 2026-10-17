@@ -59,8 +59,14 @@ For example, CMake relies on VCPKG_ROOT environment variable being set (which it
 
 First, instruct vcpkg to fetch all the required dependencies:
 
+For Linux:
 ```
 cmake --preset=default
+```
+
+For Windows:
+```
+cmake --preset=vcpkg
 ```
 
 This will also generate the game project files and put them in the build folder.
@@ -70,7 +76,7 @@ This will install the games dependencies such as SDL2*, CppGamelib, mazer etc. T
 
 ## Build
 
-Them once all the dependencies are built (and there are no errors), instruct the build system to build the game from the project files that were generated in the build folder:
+Then, once all the dependencies are built (and there are no errors), instruct the build system to build the game from the project files that were generated in the build folder:
 
 ```
 cmake --build build
@@ -94,13 +100,13 @@ This contains the dependencies that vcpkg will attempt to find and build/install
 ```
 {
   "dependencies": [
-    "libmonad",
-    "cppgamelib",
-    "testlib",
-    "mazer",
-    "libsodium",
-    "gtest",
-    "sdl2",
+    "libmonad",     <- Get LibMonad
+    "cppgamelib",   <- Get CppGameLib
+    "testlib",      
+    "mazer",        <- Get A game library called Mazer
+    "libsodium",    <- Get a networking dependency of CppGameLIb
+    "gtest",        <- Get google test 
+    "sdl2",         <- Get SDL and some other libs it provides (we use all of them)
     "sdl2-ttf",
     "sdl2-mixer",
     "sdl2-image"
