@@ -1,5 +1,4 @@
 #include "GameCommands.h"
-#include <cppgamelib/common/common.h>
 #include <memory>
 #include <cppgamelib/events/ControllerMoveEvent.h>
 #include <cppgamelib/events/SceneChangedEvent.h>
@@ -16,6 +15,8 @@
 #include <cppgamelib/events/NetworkPlayerJoinedEvent.h>
 #include <cppgamelib/utils/Utils.h>
 #include <mazer/GameDataManager.h>
+
+#include "file/Logger.h"
 
 using namespace gamelib;
 using namespace std;
@@ -170,9 +171,9 @@ void GameCommands::StartNetworkLevel()
 	EventManager::Get()->RaiseEvent(EventFactory::Get()->CreateStartNetworkLevelEvent(1), this);
 }
 
-void GameCommands::PingGameServer(const unsigned long deltaMs) { NetworkManager::Get()->PingGameServer(deltaMs); }	
+void GameCommands::PingGameServer(const gamelib::DeltaTime* deltaTime) { NetworkManager::Get()->PingGameServer(deltaTime); }
 
-ListOfEvents GameCommands::HandleEvent(const std::shared_ptr<Event>& evt, const unsigned long deltaMs)
+ListOfEvents GameCommands::HandleEvent(const std::shared_ptr<Event>& evt, const gamelib::DeltaTime* deltaTime)
 {	
 	// Consider handling all game level events in LevelManager.cpp which then call into GameCommands.cpp
 	return {};

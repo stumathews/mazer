@@ -14,7 +14,7 @@
       "kind": "git",
       "repository": "https://github.com/stumathews/vcpkg-registry",
       "reference": "master",
-      "baseline": "3400964e48bbf35ece2fb6e9bf47240f54c11cce",
+      "baseline": "e0d657f99a5c501699ec0ce9cda5af4f6e23ff44",
       "packages": [ "libmonad", "cppgamelib", "testlib", "mazer" ]
     }
   ]

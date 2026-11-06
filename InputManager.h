@@ -8,7 +8,7 @@ public:
 	explicit InputManager(std::shared_ptr<GameCommands> gameCommands, const bool verbose)
 	: gameCommands(std::move(gameCommands)), verbose(verbose) {}
 	
-	void Sample(unsigned long deltaMs) override;
+	void Sample(const gamelib::DeltaTime* deltaTime) override;
 
 private:
 	

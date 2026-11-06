@@ -1,12 +1,11 @@
 //#include "SDL.h"
 #include <vector>
-#include <cppgamelib\file\Logger.h>
-#include <cppgamelib\file\SettingsManager.h>
-#include <cppgamelib\file/TextFile.h>
-#include <cppgamelib\structure/GameStructure.h>
-#include <cppgamelib\structure/FixedStepGameLoop.h>
+#include <cppgamelib/file/Logger.h>
+#include <cppgamelib/file/SettingsManager.h>
+#include <cppgamelib/file/TextFile.h>
+#include <cppgamelib/structure/GameStructure.h>
+#include <cppgamelib/structure/FixedStepGameLoop.h>
 #include <cppgamelib/objects/GameWorldData.h>
-#include <direct.h>
 #include <GameData.h>
 #include <GameDataManager.h>
 #include <iostream>
@@ -15,17 +14,22 @@
 #include <events/PlayerMovedEvent.h>
 #include <events/UpdateProcessesEvent.h>
 #include <Logging/ErrorLogManager.h>
-#include <testlib/messages.h>
 #include <mazer/Enemy.h>
 #include <mazer/Room.h>
 #include <net/NetworkManager.h>
 #include <scene/SceneManager.h>
 #include <cppgamelib/events/AddGameObjectToCurrentSceneEvent.h>
 #include <cppgamelib/events/UpdateAllGameObjectsEvent.h>
-#include <direct.h>
+#include <filesystem>
+
+
+
 
 #include "LevelManager.h"
 #include <mazer/EnemyMovedEvent.h>
+
+#include "Player.h"
+#include "time/SimulationClock.h"
 
 using namespace std;
 
@@ -48,7 +52,7 @@ namespace
 
 	static void InitializeGameSubSystems(GameStructure& gameStructure);
 	static void PrepareFirstLevel();
-	static void GetInput(unsigned long deltaMs);
+	static void GetInput(const gamelib::DeltaTime* deltaTime);
 
 	void PrepareFirstLevel()
 	{
@@ -84,8 +88,8 @@ namespace
 		constexpr auto screenWidth = 0; // 0 will mean it will get read from the settings file
 		constexpr auto screenHeight = 0; // 0 will mean it will get read from the settings file
 		constexpr auto windowTitle = "Mazer2D!";
-		constexpr auto resourcesFilePath = "conf\\Resources.xml"; // relative to output binary folder
-		constexpr auto sceneFolderPath = "conf\\";
+		constexpr auto resourcesFilePath = "conf/Resources.xml"; // relative to output binary folder
+		constexpr auto sceneFolderPath = "conf/";
 
 		// Check game settings to determine if this is a network game
 		const auto isNetworkGame = SettingsManager::Get()->GetBool("global", "isNetworkGame");
@@ -97,7 +101,7 @@ namespace
 		// Initialize game structure
 		const auto isGameStructureInitialized = gameStructure.Initialize(
 			screenWidth, screenHeight, windowTitle, resourcesFilePath,
-			sceneFolderPath);
+			sceneFolderPath, false);
 
 		// Initialize level manager
 		const auto isLevelManagerInitialized = LevelManager::Get()->Initialize();
@@ -117,16 +121,16 @@ namespace
 	}
 
 	// Runs each frame to update the game state. This is called automatically by the game loop.
-	static void Update(const unsigned long deltaMs)
+	static void Update(const gamelib::DeltaTime* deltaTime)
 	{
 		// Execute 'draw' event's subscribers immediately
-		EventManager::Get()->DispatchEventToSubscriber(EventFactory::Get()->CreateUpdateAllGameObjectsEvent(), deltaMs);
+		EventManager::Get()->DispatchEventToSubscriber(EventFactory::Get()->CreateUpdateAllGameObjectsEvent(), deltaTime);
 
 		//Execute 'update processes' event's subscribers immediately.
-		EventManager::Get()->DispatchEventToSubscriber(EventFactory::Get()->CreateUpdateProcessesEvent(), deltaMs);
+		EventManager::Get()->DispatchEventToSubscriber(EventFactory::Get()->CreateUpdateProcessesEvent(), deltaTime);
 
 		// For each event in the event queue, call all event's subscribers iteratively.
-		EventManager::Get()->ProcessAllEvents(deltaMs);  // Must not take longer than the time step, or the game will lag. If it does, consider increasing the time step.
+		EventManager::Get()->ProcessAllEvents(deltaTime);  // Must not take longer than the time step, or the game will lag. If it does, consider increasing the time step.
 	}
 
 	// Runs during each frame to draw the current scene. This is called automatically by the game loop.
@@ -136,13 +140,13 @@ namespace
 		EventManager::Get()->DispatchEventToSubscriber(EventFactory::Get()->CreateGenericEvent(DrawCurrentSceneEventId, "Game"), 0UL);
 	}
 
-	void GetInput(const unsigned long deltaMs)
+	void GetInput(const gamelib::DeltaTime* deltaTime)
 	{
 		// Sample input events from the SDL event queue and translate them into game commands. This is called automatically by the game loop.
-		LevelManager::Get()->GetInputManager()->Sample(deltaMs);
+		LevelManager::Get()->GetInputManager()->Sample(deltaTime);
 
 		// If this is a network game, listen for network messages from the server or clients. Will create networking events. This is called automatically by the game loop.
-		NetworkManager::Get()->Listen(mazer::GameDataManager::Get()->GameWorldData.ElapsedGameTime);
+		NetworkManager::Get()->Listen(deltaTime);
 	}
 }
 
@@ -151,23 +155,19 @@ int main(int, char* [])
 	try
 	{
 		// Load settings file
-		if (!SettingsManager::Get()->ReadSettingsFile("conf\\settings.xml"))
+		if (!SettingsManager::Get()->ReadSettingsFile("conf/settings.xml"))
 		{
-			char cwd[1024];
-			if (_getcwd(cwd, sizeof(cwd)) != nullptr)
-			{
-				std::cout << "Current working directory: " << cwd << "\n";
-			}
-			else
-			{
-				std::cout << "Failed to get current working directory.\n";
+			std::filesystem::path currentDirectory = std::filesystem::current_path();
 
-				THROW(1, "Could not load settings file", "Settings");
-			}
+			std::cout << "Could not load settings. CWD: " << currentDirectory.string() << "\n";
+
+			THROW(1, "Could not load settings file", "Settings");
 		}
 
 		// Initialize the game infrastructure: loop strategy , update, draw, and input functions
-		GameStructure infrastructure(std::make_shared<FixedStepGameLoop>(16, Update, Draw, GetInput));
+		int framerate = SettingsManager::Get()->GetInt("game","framerate");
+		auto timeStep = SimulationClock::TickToMilliseconds(1, framerate);
+		GameStructure infrastructure(std::make_shared<FixedStepGameLoop>(timeStep, Update, Draw, GetInput));
 
 		// Initialize game subsystems: logging, level manager, network manager, etc.
 		InitializeGameSubSystems(infrastructure);

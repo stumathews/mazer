@@ -36,13 +36,13 @@ public:
 	void InvalidMove(bool beVerbose = false) const;
 	void FetchedPickup(bool beVerbose = false) const;
 	void StartNetworkLevel();
-	static void PingGameServer(unsigned long deltaMs);
+	static void PingGameServer(const gamelib::DeltaTime* deltaTime);
 private:
 	bool verbose;
 	bool logCommands;
 
 	// Inherited via EventSubscriber
-	gamelib::ListOfEvents HandleEvent(const std::shared_ptr<gamelib::Event>& evt, unsigned long deltaMs) override;
+	gamelib::ListOfEvents HandleEvent(const std::shared_ptr<gamelib::Event>& evt, const gamelib::DeltaTime* deltaTime) override;
 };
 
 

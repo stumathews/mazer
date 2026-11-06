@@ -10,11 +10,11 @@
 #include <events/UpdateProcessesEvent.h>
 #include <scene/SceneManager.h>
 #include <ElapsedGameTimeProvider.h>
+#include <SDL_mixer.h>
 #include <common/Common.h>
 #include <mazer/Level.h>
 #include <mazer/PlayerCollidedWithEnemyEvent.h>
 #include <mazer/PlayerCollidedWithPickupEvent.h>
-#include <cppgamelib/events/UpdateAllGameObjectsEvent.h>
 #include <cppgamelib/events/GameObjectEvent.h>
 #include <file/Logger.h>
 #include <mazer/Player.h>
@@ -30,6 +30,8 @@
 #include <cppgamelib/character/AnimatedSprite.h>
 #include <cppgamelib/character/Inventory.h>
 #include <cppgamelib/common/constants.h>
+#include <cppgamelib/objects/GameObject.h>
+#include <mazer/pickup.h>
 
 using namespace gamelib;
 using namespace mazer;
@@ -63,7 +65,7 @@ bool LevelManager::Initialize()
 	eventManager->SubscribeToEvent(mazer::InvalidMoveEventId, this);
 	eventManager->SubscribeToEvent(mazer::FetchedPickupEventId, this);
 	eventManager->SubscribeToEvent(GameObjectTypeEventId, this);
-	eventManager->SubscribeToEvent(LevelChangedEventTypeEventId, this);
+	eventManager->SubscribeToEvent(SceneChangedEventTypeEventId, this);
 	eventManager->SubscribeToEvent(NetworkPlayerJoinedEventId, this);
 	eventManager->SubscribeToEvent(StartNetworkLevelEventId, this);
 	eventManager->SubscribeToEvent(UpdateProcessesEventId, this);
@@ -90,13 +92,15 @@ bool LevelManager::Initialize()
 	return initialized = true;
 }
 
-ListOfEvents LevelManager::HandleEvent(const std::shared_ptr<Event>& evt, const unsigned long inDeltaMs)
+ListOfEvents LevelManager::HandleEvent(const std::shared_ptr<Event>& evt, const gamelib::DeltaTime* deltaTime)
 {
 	// Response to level changing
-	if(evt->Id.PrimaryId == LevelChangedEventTypeEventId.PrimaryId) { OnLevelChanged(evt); }
+	if(evt->Id.PrimaryId == SceneChangedEventTypeEventId.PrimaryId) {
+		OnLevelChanged(evt);
+	}
 
 	// Respond to event to update level processes
-	if(evt->Id.PrimaryId == UpdateProcessesEventId.PrimaryId) { processManager.UpdateProcesses(inDeltaMs); }
+	if(evt->Id.PrimaryId == UpdateProcessesEventId.PrimaryId) { processManager.UpdateProcesses(deltaTime->milliseconds); }
 
 	// Respond to invalid move event
 	if(evt->Id.PrimaryId == mazer::InvalidMoveEventId.PrimaryId) { gameCommands->InvalidMove();}
@@ -138,22 +142,22 @@ void LevelManager::OnEnemyCollision(const std::shared_ptr<Event>& evt)
 	const auto collisionEvent = To<PlayerCollidedWithEnemyEvent>(evt);
 
 	// Extract the enemies hit point value from the enemy's properties
-	const auto& enemyHitPoints = collisionEvent->Enemy->StringProperties["HitPoint"];
+	const auto& enemyHitPoints = collisionEvent->TheEnemy->StringProperties["HitPoint"];
 
 	stringstream message;
-	message << "Player health is " << to_string(collisionEvent->Player->GetHealth());
+	message << "Player health is " << to_string(collisionEvent->ThePlayer->GetHealth());
 
 	// Reduce the player's health by the enemy's hit points
-	collisionEvent->Player->IntProperties["Health"] -= strtol(enemyHitPoints.c_str(), nullptr, 0);
+	collisionEvent->ThePlayer->IntProperties["Health"] -= strtol(enemyHitPoints.c_str(), nullptr, 0);
 
 	// Print the player's health to the console
 	Logger::Get()->LogThis(message.str());
 
 	// Update the player's health (this will be reflected on the HUD)
-	playerHealth->Text = to_string(collisionEvent->Player->GetHealth());
+	playerHealth->Text = to_string(collisionEvent->ThePlayer->GetHealth());
 
 	// Check if the player is dead
-	if(collisionEvent->Player->GetHealth() <= 0)
+	if(collisionEvent->ThePlayer->GetHealth() <= 0)
 	{
 		// Raise event to indicate the player has died
 		eventManager->RaiseEvent(To<Event>(eventFactory->CreateGenericEvent(PlayerDiedEventId, GetSubscriberName())), this);
@@ -166,16 +170,16 @@ void LevelManager::OnPickupCollision(const std::shared_ptr<Event>& evt) const
 	const auto collisionEvent = To<PlayerCollidedWithPickupEvent>(evt);
 
 	// Extract the pickup value from the pickup's properties
-	const auto& pickupValue = collisionEvent->Pickup->StringProperties["value"];
+	const auto& pickupValue = collisionEvent->ThePickup->StringProperties["value"];
 		
 	// Update the player's points (Increase them on collision with the pickup)
-	collisionEvent->Player->IntProperties["Points"] += strtol(pickupValue.c_str(), nullptr, 0);
+	collisionEvent->ThePlayer->IntProperties["Points"] += strtol(pickupValue.c_str(), nullptr, 0);
 
 	// Print the player's points to the console
 	stringstream message;
-	message << "Player gain " << to_string(collisionEvent->Player->GetPoints()) << " points";
+	message << "Player gain " << to_string(collisionEvent->ThePlayer->GetPoints()) << " points";
 
-	playerPoints->Text = to_string(collisionEvent->Player->GetPoints());
+	playerPoints->Text = to_string(collisionEvent->ThePlayer->GetPoints());
 
 	Logger::Get()->LogThis(playerPoints->Text);
 }
@@ -297,9 +301,9 @@ void LevelManager::OnGameWon()
 	Logger::Get()->LogThis("All Pickups Collected Well Done!");
 }
 
-void LevelManager::GetKeyboardInput(const unsigned long deltaMs) const
+void LevelManager::GetKeyboardInput(const gamelib::DeltaTime* deltaTime) const
 {
-	inputManager->Sample(deltaMs);
+	inputManager->Sample(deltaTime);
 }
 
 void LevelManager::CreatePlayer(const std::vector<std::shared_ptr<mazer::Room>> &rooms, const int resourceId) 
@@ -580,7 +584,7 @@ inline std::string LevelManager::GetSubscriberName()
 void LevelManager::SendGameState()
 {
 	// We'll broadcast our state as pings to the server
-	GameCommands::PingGameServer(GameDataManager::Get()->GameWorldData.ElapsedGameTime);
+	GameCommands::PingGameServer(0);
 }
 
 void LevelManager::ScheduleProcess(std::shared_ptr<Process> process)  // NOLINT(performance-unnecessary-value-param)

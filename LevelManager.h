@@ -12,7 +12,6 @@
 #include <character/StaticSprite.h>
 #include "Enemy.h"
 #include "InputManager.h"
-#include "Pickup.h"
 #include "graphic/DrawableText.h"
 #include "net/GameStatePusher.h"
 #include "net/NetworkingActivityMonitor.h"
@@ -36,7 +35,7 @@ public:
     static void SendGameState();
     [[nodiscard]] bool ChangeLevel(int levelNum) const;
     
-    gamelib::ListOfEvents HandleEvent(const std::shared_ptr<gamelib::Event>& evt, const unsigned long inDeltaMs) override;
+    gamelib::ListOfEvents HandleEvent(const std::shared_ptr<gamelib::Event>& evt, const gamelib::DeltaTime* deltaTime) override;
     static bool GetBoolSetting(const std::string& section, const std::string& settingName);
     static int GetIntSetting(const std::string& section, const std::string& settingName);
     static LevelManager* Get();
@@ -56,12 +55,16 @@ public:
     void CreateLevel(const std::string& levelFilePath); // Raises level creation events
     [[nodiscard]] std::shared_ptr<gamelib::DrawableText> CreateDrawablePlayerHealth() const;
     [[nodiscard]] std::shared_ptr<gamelib::DrawableText> CreateDrawablePlayerPoints() const;
-    void GetKeyboardInput(const unsigned long deltaMs) const;
+    void GetKeyboardInput(const gamelib::DeltaTime* deltaTime) const;
     void InitializeAutoPickups(const std::vector<std::shared_ptr<mazer::Pickup>>& inPickups);
     static void InitializePlayer(const std::shared_ptr<mazer::Player>& inPlayer, const std::shared_ptr<gamelib::SpriteAsset>& spriteAsset);
     void InitializeRooms(const std::vector<std::shared_ptr<mazer::Room>>& rooms);
 
     void RemoveAllGameObjects();
+
+    std::shared_ptr<mazer::Player> GetPlayer() const {
+        return player;
+    }
 
 protected:
     static LevelManager* instance;

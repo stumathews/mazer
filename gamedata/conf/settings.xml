@@ -16,15 +16,19 @@
     <setting name="print_debugging_text" type="bool">false</setting>
     <setting name="print_debugging_text_neighbours_only" type="bool">true</setting>
 		<setting name="numPickups" type="int">20</setting>
-		<setting name="isNetworkGame" type="bool">true</setting>
+		<setting name="isNetworkGame" type="bool">false</setting>
 		<setting name="createAutoLevel" type="bool">false</setting>
-		<setting name="level1FileName" type="string">conf\\Level5.xml</setting>
-		<setting name="level2FileName" type="string">conf\\Level2.xml</setting>
-    <setting name="level3FileName" type="string">conf\\Level3.xml</setting>
-    <setting name="level4FileName" type="string">conf\\Level4.xml</setting>
-    <setting name="level5FileName" type="string">conf\\Level5.xml</setting>
+		<setting name="level1FileName" type="string">conf/Level5.xml</setting>
+		<setting name="level2FileName" type="string">conf/Level2.xml</setting>
+    <setting name="level3FileName" type="string">conf/Level3.xml</setting>
+    <setting name="level4FileName" type="string">conf/Level4.xml</setting>
+    <setting name="level5FileName" type="string">conf/Level5.xml</setting>
     <setting name="disableCharacters" type="bool">false</setting>
   </global>
+
+    <game>
+        <setting name="framerate" type="int">60</setting>
+    </game>
 
 	<gamecommands>
 		<setting name="logCommands" type="bool">false</setting>
