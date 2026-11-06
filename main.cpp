@@ -1,4 +1,15 @@
-//#include "SDL.h"
+
+/*
+	##   ##    ##     ### ##   ### ###  ### ##            ## ##    ### ##
+	## ##      ##    ##  ##    ##  ##   ##  ##           ##  ##    ##  ##
+	# ### #   ## ##      ##     ##       ##  ##               ##    ##  ##
+	## # ##   ##  ##    ##      ## ##    ## ##               ##     ##  ##
+	##   ##   ## ###   ##       ##       ## ##              ##      ##  ##
+	##   ##   ##  ##  ##  ##    ##  ##   ##  ##            #   ##   ##  ##
+	##   ##  ###  ##  # ####   ### ###  #### ##           ######   ### ##
+*/
+
+
 #include <vector>
 #include <cppgamelib/file/Logger.h>
 #include <cppgamelib/file/SettingsManager.h>
@@ -32,7 +43,6 @@
 #include "time/SimulationClock.h"
 
 using namespace std;
-
 using namespace std;
 using namespace gamelib;
 
@@ -40,16 +50,6 @@ typedef SettingsManager Settings;
 
 namespace
 {
-	/*
-		##   ##    ##     ### ##   ### ###  ### ##            ## ##    ### ##
-		## ##      ##    ##  ##    ##  ##   ##  ##           ##  ##    ##  ##
-		# ### #   ## ##      ##     ##       ##  ##               ##    ##  ##
-		## # ##   ##  ##    ##      ## ##    ## ##               ##     ##  ##
-		##   ##   ## ###   ##       ##       ## ##              ##      ##  ##
-		##   ##   ##  ##  ##  ##    ##  ##   ##  ##            #   ##   ##  ##
-		##   ##  ###  ##  # ####   ### ###  #### ##           ######   ### ##
-	*/
-
 	static void InitializeGameSubSystems(GameStructure& gameStructure);
 	static void PrepareFirstLevel();
 	static void GetInput(const gamelib::DeltaTime* deltaTime);
