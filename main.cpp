@@ -9,11 +9,8 @@
 	##   ##  ###  ##  # ####   ### ###  #### ##           ######   ### ##
 */
 
-
-#include <vector>
 #include <cppgamelib/file/Logger.h>
 #include <cppgamelib/file/SettingsManager.h>
-#include <cppgamelib/file/TextFile.h>
 #include <cppgamelib/structure/GameStructure.h>
 #include <cppgamelib/structure/FixedStepGameLoop.h>
 #include <cppgamelib/objects/GameWorldData.h>
@@ -21,25 +18,14 @@
 #include <GameDataManager.h>
 #include <iostream>
 #include <common/Common.h>
-#include <events/AddGameObjectToCurrentSceneEvent.h>
-#include <events/PlayerMovedEvent.h>
+#include <events/EventNumbers.h> // We do actually need this
 #include <events/UpdateProcessesEvent.h>
 #include <Logging/ErrorLogManager.h>
-#include <mazer/Enemy.h>
-#include <mazer/Room.h>
 #include <net/NetworkManager.h>
 #include <scene/SceneManager.h>
-#include <cppgamelib/events/AddGameObjectToCurrentSceneEvent.h>
 #include <cppgamelib/events/UpdateAllGameObjectsEvent.h>
 #include <filesystem>
-
-
-
-
 #include "LevelManager.h"
-#include <mazer/EnemyMovedEvent.h>
-
-#include "Player.h"
 #include "time/SimulationClock.h"
 
 using namespace std;
@@ -48,78 +34,7 @@ using namespace gamelib;
 
 typedef SettingsManager Settings;
 
-namespace
-{
-	static void InitializeGameSubSystems(GameStructure& gameStructure);
-	static void PrepareFirstLevel();
-	static void GetInput(const gamelib::DeltaTime* deltaTime);
-
-	void PrepareFirstLevel()
-	{
-		const auto isSinglePlayerGame = mazer::GameData::Get()->IsSinglePlayerGame();
-
-		if (isSinglePlayerGame)
-		{
-			auto _ = LevelManager::Get()->ChangeLevel(1);
-
-			if (Settings::Bool("global", "createAutoLevel"))
-			{
-				LevelManager::Get()->CreateAutoLevel();
-			}
-			else
-			{
-				// Get the name of the level file for the first level
-				const auto firstLevelFilePath = Settings::String("global", "level1FileName");
-
-				LevelManager::Get()->CreateLevel(firstLevelFilePath);
-			}
-		}
-
-		Logger::Get()->LogThis(!isSinglePlayerGame
-			? NetworkManager::Get()->IsGameServer()
-			? "Waiting for network players. Press 'n' to start network game."
-			: "Waiting for the server to start the network game to begin."
-			: "Creating Single player level...");
-	}
-
-	// Warms up the game subsystems, including logging, level manager, and network manager. This is called once at the start of the game.
-	void InitializeGameSubSystems(GameStructure& gameStructure)
-	{
-		constexpr auto screenWidth = 0; // 0 will mean it will get read from the settings file
-		constexpr auto screenHeight = 0; // 0 will mean it will get read from the settings file
-		constexpr auto windowTitle = "Mazer2D!";
-		constexpr auto resourcesFilePath = "conf/Resources.xml"; // relative to output binary folder
-		constexpr auto sceneFolderPath = "conf/";
-
-		// Check game settings to determine if this is a network game
-		const auto isNetworkGame = SettingsManager::Get()->GetBool("global", "isNetworkGame");
-		mazer::GameDataManager::Get()->Initialize(isNetworkGame);
-
-		// Initialize the logging system
-		ErrorLogManager::GetErrorLogManager()->Create("GameErrors.txt");
-
-		// Initialize game structure
-		const auto isGameStructureInitialized = gameStructure.Initialize(
-			screenWidth, screenHeight, windowTitle, resourcesFilePath,
-			sceneFolderPath, false);
-
-		// Initialize level manager
-		const auto isLevelManagerInitialized = LevelManager::Get()->Initialize();
-
-		const auto anyInitFailures = !IsSuccess(isGameStructureInitialized, "Successfully initialized game structure.") ||
-			!IsSuccess(isLevelManagerInitialized, "Successfully initialized Level Manager...");
-
-		// Check for any initialization failures
-		if (anyInitFailures)
-		{
-			const auto verboseLoggingEnabled = Settings::Bool("global", "verbose");
-
-			LogMessage("Game subsystem initialization failed.", verboseLoggingEnabled, true);
-
-			THROW(12, "There was a problem initializing the game subsystems", "Initialize Subsystems");
-		}
-	}
-
+namespace {
 	// Runs each frame to update the game state. This is called automatically by the game loop.
 	static void Update(const gamelib::DeltaTime* deltaTime)
 	{
@@ -140,7 +55,7 @@ namespace
 		EventManager::Get()->DispatchEventToSubscriber(EventFactory::Get()->CreateGenericEvent(DrawCurrentSceneEventId, "Game"), 0UL);
 	}
 
-	void GetInput(const gamelib::DeltaTime* deltaTime)
+	void GetInput(const DeltaTime* deltaTime)
 	{
 		// Sample input events from the SDL event queue and translate them into game commands. This is called automatically by the game loop.
 		LevelManager::Get()->GetInputManager()->Sample(deltaTime);
@@ -157,31 +72,78 @@ int main(int, char* [])
 		// Load settings file
 		if (!SettingsManager::Get()->ReadSettingsFile("conf/settings.xml"))
 		{
-			std::filesystem::path currentDirectory = std::filesystem::current_path();
-
+			const std::filesystem::path currentDirectory = std::filesystem::current_path();
 			std::cout << "Could not load settings. CWD: " << currentDirectory.string() << "\n";
-
 			THROW(1, "Could not load settings file", "Settings");
 		}
 
 		// Initialize the game infrastructure: loop strategy , update, draw, and input functions
 		int framerate = SettingsManager::Get()->GetInt("game","framerate");
-		auto timeStep = SimulationClock::TickToMilliseconds(1, framerate);
-		GameStructure infrastructure(std::make_shared<FixedStepGameLoop>(timeStep, Update, Draw, GetInput));
+		GameStructure gameStructure(std::make_shared<FixedStepGameLoop>(SimulationClock::TickToMilliseconds(1, framerate), Update, Draw, GetInput));
 
 		// Initialize game subsystems: logging, level manager, network manager, etc.
-		InitializeGameSubSystems(infrastructure);
+		constexpr auto screenWidth = 0; // 0 will mean it will get read from the settings file
+		constexpr auto screenHeight = 0; // 0 will mean it will get read from the settings file
+		constexpr auto windowTitle = "Mazer2D!";
+		constexpr auto resourcesFilePath = "conf/Resources.xml"; // relative to output binary folder
+		constexpr auto sceneFolderPath = "conf/";
+
+		// Check game settings to determine if this is a network game
+		const auto isNetworkGame = SettingsManager::Get()->GetBool("global", "isNetworkGame");
+		mazer::GameDataManager::Get()->Initialize(isNetworkGame);
+
+		// Initialize the logging system
+		ErrorLogManager::GetErrorLogManager()->Create("GameErrors.txt");
+
+		// Initialize game structure
+		const auto isGameStructureInitialized = gameStructure.Initialize(
+			screenWidth, screenHeight, windowTitle, resourcesFilePath,
+			sceneFolderPath, false);
+
+		// Initialize level manager
+		const auto isLevelManagerInitialized = LevelManager::Get()->Initialize();
+		const auto anyInitFailures = !IsSuccess(isGameStructureInitialized, "Successfully initialized game structure.") ||
+									 !IsSuccess(isLevelManagerInitialized, "Successfully initialized Level Manager...");
+
+		// Check for any initialization failures
+		if (anyInitFailures)
+		{
+			const auto verboseLoggingEnabled = Settings::Bool("global", "verbose");
+			LogMessage("Game subsystem initialization failed.", verboseLoggingEnabled, true);
+			THROW(12, "There was a problem initializing the game subsystems", "Initialize Subsystems");
+		}
 
 		// Load level and create/add game objects
-		PrepareFirstLevel();
+		const auto isSinglePlayerGame = mazer::GameData::Get()->IsSinglePlayerGame();
+		if (isSinglePlayerGame)
+		{
+			auto _ = LevelManager::Get()->ChangeLevel(1);
+
+			if (Settings::Bool("global", "createAutoLevel"))
+			{
+				LevelManager::Get()->CreateAutoLevel();
+			}
+			else
+			{
+				// Get the name of the level file for the first level
+				const auto firstLevelFilePath = Settings::String("global", "level1FileName");
+
+				LevelManager::Get()->CreateLevel(firstLevelFilePath);
+			}
+		}
+		Logger::Get()->LogThis(!isSinglePlayerGame
+								   ? NetworkManager::Get()->IsGameServer()
+										 ? "Waiting for network players. Press 'n' to start network game."
+										 : "Waiting for the server to start the network game to begin."
+								   : "Creating Single player level...");
 
 		// Start the game loop. This will call the Update and Draw functions every frame, as well as the GetInput function to sample input events.
 		// This will pump update/draw events onto the event system, which level objects subscribe to
-		infrastructure.DoGameLoop(&mazer::GameDataManager::Get()->GameWorldData);
+		gameStructure.DoGameLoop(&mazer::GameDataManager::Get()->GameWorldData);
 
 		// Game is finished, unload subsystems
 
-		auto isUnloaded = infrastructure.Unload();
+		const auto isUnloaded = gameStructure.Unload();
 
 		return IsSuccess(isUnloaded, "Unloading game subsystems successful.");
 	}
@@ -197,3 +159,5 @@ int main(int, char* [])
 	}
 	return 0;
 }
+
+
